@@ -1,0 +1,6 @@
+:root {
+  .var(@name, @property: @name) {
+    @{property}: @@name;
+    @{property}: ~"var(--@{name})";
+  }
+}
