@@ -6,12 +6,13 @@ import { loginAPI, registerAPI } from "../../Api/index";
 
 export default class LoginPage extends React.Component {
   state = {
-    login: '',
-    password: '',
+    login: "",
+    password: "",
+    email: "",
     loginTooShort: false,
     passwordTooShort: false,
-    errorOnLogin: false,
-
+    emailTooShort: false,
+    loginError: false
   };
 
   handleRedirection = e => {
@@ -25,27 +26,63 @@ export default class LoginPage extends React.Component {
     });
   };
 
-  handleLoginAttempt(e) {
-    const { login, password } = this.state;
+  checkForErrors(type) {
+    const { login, password, email } = this.state;
+    let loginError, passwordError, emailError;
     if (login.length < 5) {
-      this.setState({ loginTooShort: true });
+      loginError = true;
     }
     if (password.length < 5) {
-      this.setState({ passwordTooShort: true });
+      passwordError = true;
     }
-    const { loginTooShort, passwordTooShort } = this.state;
-    if (!loginTooShort && !passwordTooShort) {
-      loginAPI(login, password);
+    if (type === "register" && email.length < 5) {
+      emailError = true;
     }
+
+    this.setState({
+      loginTooShort: loginError,
+      passwordTooShort: passwordError,
+      emailTooShort: emailError
+    });
+    if (!loginError && !passwordError && !emailError) {
+      return false;
+    }
+    return true;
+  }
+
+  handleSubmit(type) {
+    const { login, password, email } = this.state;
+    let response;
+    let areErrors = this.checkForErrors(type);
+    console.log(areErrors);
+    if (!areErrors) {
+      if (type === "login") {
+        response = loginAPI(login, password);
+      } else if (type === "register") {
+        response = registerAPI(login, password, email);
+      }
+      console.log(response);
+      // response === "succes" ? this.setState({ goFurther: true }) : null;
+    }
+  }
+
+  handleRegistrationAttempt(e) {
+    let areErrors = this.checkForErrors("register");
   }
 
   render() {
     const { pathname } = this.props.location;
     const isLoginPage = pathname === "/login";
     const isSigninPage = pathname === "/signin";
-    const { loginTooShort, passwordTooShort } = this.state;
+    const {
+      goFurther,
+      loginTooShort,
+      passwordTooShort,
+      emailTooShort
+    } = this.state;
     return (
       <div className={style.box}>
+        {goFurther ? <Redirect to="/home" /> : null}
         <form onSubmit={this.handleRedirection}>
           <div className={style.inputContainer}>
             {isSigninPage ? (
@@ -59,7 +96,7 @@ export default class LoginPage extends React.Component {
                 />
                 <label
                   className={classnames(
-                    loginTooShort ? style.errorLabel : style.errorLabel__hidden
+                    emailTooShort ? style.errorLabel : style.errorLabel__hidden
                   )}
                 >
                   Podaj poprawny email
@@ -104,7 +141,7 @@ export default class LoginPage extends React.Component {
                 <li>
                   <button
                     className={style.highlightedButton}
-                    onClick={e => this.handleLoginAttempt(e)}
+                    onClick={() => this.handleSubmit("login")}
                   >
                     Zaloguj
                   </button>
@@ -120,7 +157,7 @@ export default class LoginPage extends React.Component {
                 <li>
                   <button
                     className={style.highlightedButton}
-                    onClick={e => this.handleRegistrationAttempt()}
+                    onClick={e => this.handleSubmit("register")}
                   >
                     Zarejestruj
                   </button>

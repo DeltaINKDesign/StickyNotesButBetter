@@ -8,8 +8,6 @@ const loginAPI = async (login, passw) => {
   };
   try {
     let response = await axios.post(LOGIN_ENDPOINT, data);
-    console.log(response);
-
     if (
       response.status === 200 &&
       response.data.jwt &&
@@ -20,7 +18,9 @@ const loginAPI = async (login, passw) => {
 
       localStorage.setItem("acces_token", jwt);
       localStorage.setItem("expire_at", expire_at);
+      return "succes";
     }
+    return "failure";
   } catch (e) {
     console.log("error:" + e);
   }
@@ -39,11 +39,10 @@ const registerAPI = async (login, password, email) => {
       url: REGISTER_ENDPOINT,
       data: data
     });
-    console.log(response)
+    console.log(response);
   } catch (e) {
     console.log(e);
   }
-
 };
 
 export { loginAPI, registerAPI };
