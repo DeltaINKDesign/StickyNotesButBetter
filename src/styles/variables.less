@@ -4,3 +4,60 @@
     @{property}: ~"var(--@{name})";
   }
 }
+
+.buttonExample {
+  transition: 0.2s all;
+  width: 130px;
+  height: 37px;
+  outline: none;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.button {
+  .buttonExample();
+  background: #fff;
+  &:hover {
+    background: #5bc76f;
+    color: #fff;
+  }
+
+  color: #5bc76f;
+}
+
+.highlightedButton {
+  .buttonExample();
+  background: #5bc76f;
+  color: #fff;
+  &:focus {
+    background: #fff;
+    color: #5bc76f;
+  }
+}
+
+.inputBox {
+  height: 50px;
+  width: 280px;
+  background: #fff;
+  outline: none;
+  font-size: 20px;
+  border: none;
+  border-radius: 5px;
+  margin-top: 25px;
+  padding-left: 25px;
+
+  &::placeholder {
+    color: #363636;
+  }
+}
+
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.flexRow {
+  display: flex;
+  flex-direction: row;
+}

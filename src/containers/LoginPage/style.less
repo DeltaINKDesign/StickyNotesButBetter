@@ -1,0 +1,52 @@
+@import (reference) "../../styles/variables";
+
+.box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #eaeba9;
+  flex-direction: column;
+  padding-top: 50px;
+}
+
+.inputContainer {
+  .flexColumn();
+  padding: 0 80px;
+}
+.inputBox {
+  .inputBox();
+}
+
+.przypominajka {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.buttonList {
+  margin-top: 25px;
+  .flexRow();
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  margin-bottom: 65px;
+}
+
+.button {
+  .button();
+}
+
+.highlightedButton {
+  .highlightedButton();
+}
+
+.errorLabel {
+  padding-left: 5px;
+  text-align: center;
+  margin-top: 10px;
+  color: #363636 + darkred;
+
+
+  &__hidden {
+    display: none;
+  }
+}
