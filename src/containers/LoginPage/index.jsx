@@ -28,11 +28,11 @@ export default class LoginPage extends React.Component {
   };
 
   checkForErrors(type) {
-    const { login, password, email } = this.state;
+    const {password, email } = this.state;
     let loginError = false,
       passwordError = false,
       emailError = false;
-    if (login.length < 5) {
+    if (email.length < 5) {
       loginError = true;
     }
     if (password.length < 5 && !type === "recover") {
@@ -56,20 +56,24 @@ export default class LoginPage extends React.Component {
   async handleSubmit(type) {
     const { login, password, email } = this.state;
     let areErrors = this.checkForErrors(type);
-    console.log(areErrors);
 
     if (!areErrors) {
       if (type === "login") {
-        let what = await loginAPI(login, password);
-        console.log(what)
-        if (localStorage.getItem("acces_token")) {
-          this.setState({ goFurther: true });
-        }
+        await loginAPI(email, password);
       } else if (type === "register") {
-        registerAPI(login, password, email);
+        try {
+          await registerAPI(login, password, email);
+          await loginAPI(email, password);
+        } catch (e) {
+          console.log(e);
+        }
       } else if (type === "recover") {
         let recoveredPassword = await recoverAPI(login, email);
         this.setState({ newPassword: recoveredPassword.data.password });
+      }
+
+      if (localStorage.getItem("acces_token")) {
+        this.setState({ goFurther: true });
       }
     }
   }
@@ -88,40 +92,40 @@ export default class LoginPage extends React.Component {
     } = this.state;
     return (
       <div className={style.box}>
-        {goFurther ? <Redirect to="/home" /> : null}
+        {goFurther ? <Redirect to="/loginsuccesful" /> : null}
         <form onSubmit={this.handleRedirection}>
           <div className={style.inputContainer}>
             {isSigninPage || isRecoverPage ? (
               <>
                 <input
-                  name="email"
-                  type="email"
+                  type="text"
+                  name="login"
                   className={style.inputBox}
-                  placeholder="mail"
+                  placeholder="login"
                   onChange={e => this.handleInputChange(e)}
                 />
                 <label
                   className={classnames(
-                    emailTooShort ? style.errorLabel : style.errorLabel__hidden
+                    loginTooShort ? style.errorLabel : style.errorLabel__hidden
                   )}
                 >
-                  Podaj poprawny email
+                  Podaj login który ma więcej jak 5 znaków.
                 </label>
               </>
             ) : null}
             <input
-              type="text"
-              name="login"
+              name="email"
+              type="email"
               className={style.inputBox}
-              placeholder="login"
+              placeholder="mail"
               onChange={e => this.handleInputChange(e)}
             />
             <label
               className={classnames(
-                loginTooShort ? style.errorLabel : style.errorLabel__hidden
+                emailTooShort ? style.errorLabel : style.errorLabel__hidden
               )}
             >
-              Podaj login który ma więcej jak 5 znaków.
+              Podaj poprawny email
             </label>
             {!isRecoverPage ? (
               <>

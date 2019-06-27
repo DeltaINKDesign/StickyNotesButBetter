@@ -1,6 +1,8 @@
 import { LOGIN_ENDPOINT, REGISTER_ENDPOINT, RECOVER_ENDPOINT } from "../consts";
 import axios from "axios";
 
+const getNotes = () => {};
+
 const loginAPI = (login, passw) => {
   const data = {
     email: login,
@@ -13,7 +15,7 @@ const loginAPI = (login, passw) => {
       data: data
     })
       .then(response => {
-        console.log(response)
+        console.log(response);
         if (
           response.status === 200 &&
           response.data.jwt &&
@@ -52,22 +54,27 @@ const recoverAPI = (login, email) => {
   });
 };
 
-const registerAPI = async (login, password, email) => {
-  try {
-    const data = {
-      login: login,
-      password: password,
-      email: email
-    };
-    let response = await axios({
+const registerAPI = (login, password, email) => {
+  const data = {
+    login: login,
+    password: password,
+    email: email
+  };
+
+  return new Promise((resolve, reject) => {
+    axios({
       method: "post",
       responseType: "json",
       url: REGISTER_ENDPOINT,
       data: data
-    });
-  } catch (e) {
-    console.log(e);
-  }
+    })
+      .then(data => {
+        resolve(data);
+      })
+      .catch(e => {
+        reject(e);
+      });
+  });
 };
 
 export { loginAPI, registerAPI, recoverAPI };
