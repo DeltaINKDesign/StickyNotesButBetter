@@ -13,7 +13,8 @@ export default class LoginPage extends React.Component {
     passwordTooShort: false,
     emailTooShort: false,
     loginError: false,
-    newPassword: ""
+    newPassword: "",
+    goFurther: false
   };
 
   handleRedirection = e => {
@@ -28,7 +29,7 @@ export default class LoginPage extends React.Component {
   };
 
   checkForErrors(type) {
-    const {password, email } = this.state;
+    const { password, email } = this.state;
     let loginError = false,
       passwordError = false,
       emailError = false;
@@ -41,7 +42,6 @@ export default class LoginPage extends React.Component {
     if (type === "register" && email.length < 5 && email.search("@")) {
       emailError = true;
     }
-    console.log(loginError, emailError, passwordError);
     this.setState({
       loginTooShort: loginError,
       passwordTooShort: passwordError,
@@ -56,24 +56,22 @@ export default class LoginPage extends React.Component {
   async handleSubmit(type) {
     const { login, password, email } = this.state;
     let areErrors = this.checkForErrors(type);
-
+    const thisthis = this;
     if (!areErrors) {
-      if (type === "login") {
-        await loginAPI(email, password);
-      } else if (type === "register") {
-        try {
+      try {
+        if (type === "login") {
+          await loginAPI(email, password);
+          this.setState({ goFurther: true });
+        } else if (type === "register") {
           await registerAPI(login, password, email);
           await loginAPI(email, password);
-        } catch (e) {
-          console.log(e);
+          this.setState({ goFurther: true });
+        } else if (type === "recover") {
+          let recoveredPassword = await recoverAPI(login, email);
+          this.setState({ newPassword: recoveredPassword.data.password });
         }
-      } else if (type === "recover") {
-        let recoveredPassword = await recoverAPI(login, email);
-        this.setState({ newPassword: recoveredPassword.data.password });
-      }
-
-      if (localStorage.getItem("acces_token")) {
-        this.setState({ goFurther: true });
+      } catch (e) {
+        console.log(e);
       }
     }
   }
@@ -90,9 +88,11 @@ export default class LoginPage extends React.Component {
       emailTooShort,
       newPassword
     } = this.state;
+    console.log(goFurther);
     return (
       <div className={style.box}>
-        {goFurther ? <Redirect to="/loginsuccesful" /> : null}
+        {pathname === "/" && !goFurther ? <Redirect to="/login" /> : null}
+        {goFurther ? <Redirect to="/loginsucces" /> : null}
         <form onSubmit={this.handleRedirection}>
           <div className={style.inputContainer}>
             {isSigninPage || isRecoverPage ? (

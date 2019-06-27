@@ -1,25 +1,51 @@
 import React from "react";
 import style from "./style.less";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
+import {
+  getNotesAPI,
+  filterNotesAPI,
+  updateNotesAPI,
+  deleteNotesAPI
+} from "../../Api/index";
+import Note from "../../components/Note";
 
 class HomePage extends React.Component {
   state = {
-    karteczki: [
-      {
-        id: 3,
-        name: "Kupić latarkę",
-        description: "Latarka z briko marsze",
-        color: "white"
-      },
-      {
-        id: 6,
-        name: "zjeść latarkę",
-        description: "Latdasdze",
-        color: "whidate"
-      }
-    ]
+    karteczki: [],
+    noResults: false,
+    logout: false,
+    addNote: false
   };
-  componentDidMount() {}
+
+  componentDidMount() {
+    this.get();
+  }
+
+  get() {
+    getNotesAPI().then(e => {
+      if (e.length === 0) {
+      } else {
+        this.setState({ karteczki: e, noResults: false });
+      }
+    });
+  }
+
+  filterKarteczka() {
+    const { szukajka } = this.state;
+    if (this.timeout2) {
+      clearTimeout(this.timeout2);
+      this.timeout2 = undefined;
+    }
+    this.timeout2 = setTimeout(() => {
+      filterNotesAPI(szukajka).then(e => {
+        if (!e || e.length === 0) {
+          this.setState({ karteczki: [], noResults: true });
+        } else {
+          this.setState({ karteczki: e, noResults: false });
+        }
+      });
+    }, 1200);
+  }
 
   Icon = () => (
     <svg
@@ -27,6 +53,11 @@ class HomePage extends React.Component {
       x="0px"
       y="0px"
       viewBox="0 0 492 492"
+      onClick={() => {
+        localStorage.removeItem("acces_token");
+        localStorage.removeItem("expire_at");
+        this.setState({ logout: true });
+      }}
       className={style.arrow}
     >
       <g>
@@ -44,67 +75,111 @@ class HomePage extends React.Component {
     </svg>
   );
 
-  deleteKarteczka = () => {
-    //delete from database
-    z;
+  async deleteKarteczka(id) {
+    await deleteNotesAPI(id);
+    getNotesAPI().then(e => {
+      if (e.length === 0) {
+      } else {
+        this.setState({ karteczki: e, noResults: false });
+      }
+    });
+  }
+
+  createKarteczka = () => {
+    const { addNote } = this.state;
+    if (addNote) {
+      const defaultData = {
+        name: "tytuł",
+        description: "opis",
+        color: "blue",
+        id: 0
+      };
+      console.log("dzialam");
+      this.setState(prevState => ({
+        addNote: false,
+        karteczki: [...prevState.karteczki, defaultData]
+      }));
+    }
+    return (
+      <li
+        className={style.addKarteczka}
+        onClick={() => this.setState({ addNote: true })}
+      >
+        <div className={style.vertical} />
+        <div className={style.horizontal} />
+      </li>
+    );
   };
 
-  createKarteczka = () => {};
+  async aktualizujBaze(karteczka) {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+      this.timeout = undefined;
+    }
+    this.timeout = setTimeout(() => {
+      updateNotesAPI(karteczka).then(e => {
+        getNotesAPI().then(e => {
+          if (e.length === 0) {
+          } else {
+            this.setState({ karteczki: e, noResults: false });
+          }
+        });
+      });
+    }, 800);
+  }
 
-  autogrowKozak = () => {
-    r.style.height = "5px";
-    r.style.height = r.scrollHeight + "px";
-  };
   renderKarteczki = () => {
     const { karteczki } = this.state;
+    const notes = karteczki.map(karteczka => (
+      <Note
+        note={karteczka}
+        usun={k => this.deleteKarteczka(k)}
+        aktualizuj={k => this.aktualizujBaze(k)}
+      />
+    ));
     return (
       <ul className={style.notesList}>
-        {karteczki.map(karteczka => (
-          <li className={style.karteczka}>
-            <div className={style.karteczka__ozdoba} />
-            <input
-              spellcheck="false"
-              maxlength="18"
-              className={style.karteczka__nameInput}
-              defaultValue={karteczka.name}
-            />
-            <textarea
-              onkeyup={() => this.auto_grow()}
-              ref={r => (this.r = r)}
-              spellcheck="false"
-              className={style.karteczka__descriptionInput}
-              defaultValue={karteczka.description}
-            />
-            <div className={style.row}>
-              <div className={style.options}>Color</div>
-              <div
-                className={style.options}
-                onDoubleClick={() => this.deleteKarteczka(karteczka.id)}
-              >
-                Delete
-              </div>
-            </div>
-          </li>
-        ))}
-        <li className={style.addKarteczka}>
-          <div className={style.vertical} />
-          <div className={style.horizontal} />
-        </li>
+        {notes}
+        {this.createKarteczka()}
       </ul>
     );
   };
 
+  handleInputChange = e => {
+    this.setState({
+      szukajka: e.target.value
+    });
+
+    if (this.filterTimeout) {
+      this.filterTimeout = undefined;
+    }
+    this.filterTimeout = setTimeout(() => {
+      this.filterKarteczka();
+    }, 1200);
+  };
+
   render() {
+    const { logout, noResults } = this.state;
     return (
       <div className={style.container}>
+        {logout ? <Redirect to="/" /> : null}
         <nav className={style.navbar}>
           <div className={style.leftRow}>
             <this.Icon />
-            <input placeholder="filter titles" />
+            <input
+              name="szukajka"
+              placeholder="filter titles"
+              onChange={e => {
+                this.handleInputChange(e);
+              }}
+            />
           </div>
           <div className={style.logo}>Sticky Notes</div>
         </nav>
-        {this.renderKarteczki()}
+        <div className={style.karteczkiContainer}>
+          {this.renderKarteczki()}
+          {noResults ? <span className={style.logo}>Brak wyników</span> : null}
+        </div>
       </div>
     );
   }

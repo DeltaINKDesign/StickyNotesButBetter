@@ -1,7 +1,83 @@
-import { LOGIN_ENDPOINT, REGISTER_ENDPOINT, RECOVER_ENDPOINT } from "../consts";
+import {
+  LOGIN_ENDPOINT,
+  REGISTER_ENDPOINT,
+  RECOVER_ENDPOINT,
+  GETNOTES_ENDPOINT,
+  FILTER_NOTES_ENDPOINT,
+  UPDATE_NOTE_ENDPOINT,
+  DELETE_NOTE_ENDPOINT
+} from "../consts";
+
 import axios from "axios";
 
-const getNotes = () => {};
+const deleteNotesAPI = id => {
+  const jwt = localStorage.getItem("acces_token");
+
+  return new Promise((resolve, reject) => {
+    axios({
+      method: "post",
+      url: DELETE_NOTE_ENDPOINT,
+      data: { jwt: jwt, id }
+    })
+      .then(response => {
+        resolve(response);
+      })
+      .catch(e => {
+        reject(e);
+      });
+  });
+};
+
+const updateNotesAPI = karteczka => {
+  const jwt = localStorage.getItem("acces_token");
+  return new Promise((resolve, reject) => {
+    axios({
+      method: "post",
+      url: UPDATE_NOTE_ENDPOINT,
+      data: { jwt: jwt, karteczka }
+    })
+      .then(response => {
+        resolve(response.data.data);
+      })
+      .catch(e => {
+        reject(e);
+      });
+  });
+};
+
+const getNotesAPI = () => {
+  const jwt = localStorage.getItem("acces_token");
+  return new Promise((resolve, reject) => {
+    axios({
+      method: "post",
+      url: GETNOTES_ENDPOINT,
+      data: { jwt: jwt }
+    })
+      .then(response => {
+        resolve(response.data.data);
+      })
+      .catch(e => {
+        reject(e);
+      });
+  });
+};
+
+const filterNotesAPI = search => {
+  const jwt = localStorage.getItem("acces_token");
+  return new Promise((resolve, reject) => {
+    axios({
+      method: "post",
+      url: FILTER_NOTES_ENDPOINT,
+      data: { jwt: jwt, search: search }
+    })
+      .then(response => {
+        resolve(response.data.data);
+      })
+      .catch(e => {
+        reject(e);
+      });
+  });
+};
 
 const loginAPI = (login, passw) => {
   const data = {
@@ -77,4 +153,12 @@ const registerAPI = (login, password, email) => {
   });
 };
 
-export { loginAPI, registerAPI, recoverAPI };
+export {
+  updateNotesAPI,
+  filterNotesAPI,
+  loginAPI,
+  registerAPI,
+  recoverAPI,
+  getNotesAPI,
+  deleteNotesAPI
+};
