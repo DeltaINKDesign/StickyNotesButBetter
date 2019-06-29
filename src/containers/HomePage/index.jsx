@@ -24,6 +24,7 @@ class HomePage extends React.Component {
   get() {
     getNotesAPI().then(e => {
       if (e.length === 0) {
+        this.setState({ karteczki: [] });
       } else {
         this.setState({ karteczki: e, noResults: false });
       }
@@ -32,19 +33,13 @@ class HomePage extends React.Component {
 
   filterKarteczka() {
     const { szukajka } = this.state;
-    if (this.timeout2) {
-      clearTimeout(this.timeout2);
-      this.timeout2 = undefined;
-    }
-    this.timeout2 = setTimeout(() => {
-      filterNotesAPI(szukajka).then(e => {
-        if (!e || e.length === 0) {
-          this.setState({ karteczki: [], noResults: true });
-        } else {
-          this.setState({ karteczki: e, noResults: false });
-        }
-      });
-    }, 1200);
+    filterNotesAPI(szukajka).then(e => {
+      if (!e || e.length === 0) {
+        this.setState({ karteczki: [], noResults: true });
+      } else {
+        this.setState({ karteczki: e, noResults: false });
+      }
+    });
   }
 
   Icon = () => (
@@ -77,12 +72,7 @@ class HomePage extends React.Component {
 
   async deleteKarteczka(id) {
     await deleteNotesAPI(id);
-    getNotesAPI().then(e => {
-      if (e.length === 0) {
-      } else {
-        this.setState({ karteczki: e, noResults: false });
-      }
-    });
+    this.get();
   }
 
   createKarteczka = () => {
@@ -91,14 +81,10 @@ class HomePage extends React.Component {
       const defaultData = {
         name: "tytuł",
         description: "opis",
-        color: "blue",
-        id: 0
+        color: "blue"
       };
-      console.log("dzialam");
-      this.setState(prevState => ({
-        addNote: false,
-        karteczki: [...prevState.karteczki, defaultData]
-      }));
+      this.setState({ addNote: false });
+      this.aktualizujBaze(defaultData);
     }
     return (
       <li
@@ -112,27 +98,22 @@ class HomePage extends React.Component {
   };
 
   async aktualizujBaze(karteczka) {
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-      this.timeout = undefined;
-    }
-    this.timeout = setTimeout(() => {
-      updateNotesAPI(karteczka).then(e => {
-        getNotesAPI().then(e => {
-          if (e.length === 0) {
-          } else {
-            this.setState({ karteczki: e, noResults: false });
-          }
-        });
+    updateNotesAPI(karteczka).then(e => {
+      getNotesAPI().then(e => {
+        if (e.length === 0) {
+        } else {
+          this.setState({ karteczki: e, noResults: false });
+        }
       });
-    }, 800);
+    });
   }
 
   renderKarteczki = () => {
     const { karteczki } = this.state;
-    const notes = karteczki.map(karteczka => (
+    console.log(karteczki);
+    const notes = karteczki.map(ke => (
       <Note
-        note={karteczka}
+        note={ke}
         usun={k => this.deleteKarteczka(k)}
         aktualizuj={k => this.aktualizujBaze(k)}
       />
@@ -155,11 +136,11 @@ class HomePage extends React.Component {
     }
     this.filterTimeout = setTimeout(() => {
       this.filterKarteczka();
-    }, 1200);
+    }, 600);
   };
 
   render() {
-    const { logout, noResults } = this.state;
+    const { logout, noResults,refresh } = this.state;
     return (
       <div className={style.container}>
         {logout ? <Redirect to="/" /> : null}

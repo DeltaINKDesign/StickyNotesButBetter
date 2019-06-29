@@ -17,7 +17,6 @@ export default class Note extends React.Component {
   componentDidMount() {
     const { note } = this.props;
 
-    console.log(this.props);
     this.setState({
       name: note.name,
       description: note.description,
