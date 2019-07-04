@@ -1,6 +1,6 @@
 import React from "react";
 import style from "./style.less";
-import { Link, Redirect } from "react-router-dom";
+import { Redirect } from "react-router-dom";
 import {
   getNotesAPI,
   filterNotesAPI,
@@ -24,7 +24,7 @@ class HomePage extends React.Component {
   get() {
     getNotesAPI().then(e => {
       if (e.length === 0) {
-        this.setState({ karteczki: [] });
+        this.setState({ karteczki: [], noResults: true });
       } else {
         this.setState({ karteczki: e, noResults: false });
       }
@@ -75,6 +75,11 @@ class HomePage extends React.Component {
     this.get();
   }
 
+  aktualizujBaze = karteczka => {
+    console.log(karteczka);
+    updateNotesAPI(karteczka).then(e => this.get());
+  };
+
   createKarteczka = () => {
     const { addNote } = this.state;
     if (addNote) {
@@ -97,25 +102,14 @@ class HomePage extends React.Component {
     );
   };
 
-  async aktualizujBaze(karteczka) {
-    updateNotesAPI(karteczka).then(e => {
-      getNotesAPI().then(e => {
-        if (e.length === 0) {
-        } else {
-          this.setState({ karteczki: e, noResults: false });
-        }
-      });
-    });
-  }
-
   renderKarteczki = () => {
     const { karteczki } = this.state;
-    console.log(karteczki);
-    const notes = karteczki.map(ke => (
+    const notes = karteczki.map(noteValues => (
       <Note
-        note={ke}
-        usun={k => this.deleteKarteczka(k)}
-        aktualizuj={k => this.aktualizujBaze(k)}
+        key={noteValues.id}
+        note={noteValues}
+        usun={(e) => this.deleteKarteczka(e)}
+        aktualizuj={(e) => this.aktualizujBaze(e)}
       />
     ));
     return (
@@ -132,6 +126,7 @@ class HomePage extends React.Component {
     });
 
     if (this.filterTimeout) {
+      clearTimeout(this.filterTimeout);
       this.filterTimeout = undefined;
     }
     this.filterTimeout = setTimeout(() => {
@@ -140,7 +135,7 @@ class HomePage extends React.Component {
   };
 
   render() {
-    const { logout, noResults,refresh } = this.state;
+    const { logout, noResults } = this.state;
     return (
       <div className={style.container}>
         {logout ? <Redirect to="/" /> : null}
@@ -150,16 +145,18 @@ class HomePage extends React.Component {
             <input
               name="szukajka"
               placeholder="filter titles"
-              onChange={e => {
-                this.handleInputChange(e);
-              }}
+              onChange={e => this.handleInputChange(e)}
             />
           </div>
           <div className={style.logo}>Sticky Notes</div>
         </nav>
         <div className={style.karteczkiContainer}>
           {this.renderKarteczki()}
-          {noResults ? <span className={style.logo}>Brak wyników</span> : null}
+          {noResults ? (
+            <span className={style.logo}>
+              Brak wyników/Brak dostępnych karteczek
+            </span>
+          ) : null}
         </div>
       </div>
     );

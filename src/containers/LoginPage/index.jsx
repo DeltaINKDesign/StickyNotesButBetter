@@ -56,7 +56,6 @@ export default class LoginPage extends React.Component {
   async handleSubmit(type) {
     const { login, password, email } = this.state;
     let areErrors = this.checkForErrors(type);
-    const thisthis = this;
     if (!areErrors) {
       try {
         if (type === "login") {
