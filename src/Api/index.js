@@ -112,8 +112,8 @@ const loginAPI = (login, passw) => {
   });
 };
 
-const recoverAPI = (login, email) => {
-  const data = { login: login, email: email };
+const recoverAPI = (age, email) => {
+  const data = { age: age, email: email };
   return new Promise((resolve, reject) => {
     axios({
       method: "post",
@@ -130,9 +130,9 @@ const recoverAPI = (login, email) => {
   });
 };
 
-const registerAPI = (login, password, email) => {
+const registerAPI = (age, password, email) => {
   const data = {
-    login: login,
+    age: age,
     password: password,
     email: email
   };

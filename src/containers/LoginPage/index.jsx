@@ -6,13 +6,13 @@ import { loginAPI, registerAPI, recoverAPI } from "../../Api/index";
 
 export default class LoginPage extends React.Component {
   state = {
-    login: "",
+    age: "",
     password: "",
     email: "",
-    loginTooShort: false,
+    ageTooShort: false,
     passwordTooShort: false,
     emailTooShort: false,
-    loginError: false,
+    ageError: false,
     newPassword: "",
     goFurther: false
   };
@@ -29,32 +29,36 @@ export default class LoginPage extends React.Component {
   };
 
   checkForErrors(type) {
-    const { password, email } = this.state;
-    let loginError = false,
+    const { age, password, email } = this.state;
+    let ageError = false,
       passwordError = false,
       emailError = false;
-    if (email.length < 5) {
-      loginError = true;
+    if (age === "" && type === "register") {
+      ageError = true;
     }
-    if (password.length < 5 && !type === "recover") {
+    if (email.length < 5) {
+      emailError = true;
+    }
+    if (password.length < 5 && type !== "recover") {
       passwordError = true;
     }
     if (type === "register" && email.length < 5 && email.search("@")) {
       emailError = true;
     }
+
     this.setState({
-      loginTooShort: loginError,
+      ageError: ageError,
       passwordTooShort: passwordError,
       emailTooShort: emailError
     });
-    if (!loginError && !passwordError && !emailError) {
+    if (!ageError && !passwordError && !emailError) {
       return false;
     }
     return true;
   }
 
   async handleSubmit(type) {
-    const { login, password, email } = this.state;
+    const { age, password, email } = this.state;
     let areErrors = this.checkForErrors(type);
     if (!areErrors) {
       try {
@@ -62,11 +66,11 @@ export default class LoginPage extends React.Component {
           await loginAPI(email, password);
           this.setState({ goFurther: true });
         } else if (type === "register") {
-          await registerAPI(login, password, email);
+          await registerAPI(age, password, email);
           await loginAPI(email, password);
           this.setState({ goFurther: true });
         } else if (type === "recover") {
-          let recoveredPassword = await recoverAPI(login, email);
+          let recoveredPassword = await recoverAPI(age, email);
           this.setState({ newPassword: recoveredPassword.data.password });
         }
       } catch (e) {
@@ -82,12 +86,11 @@ export default class LoginPage extends React.Component {
     const isRecoverPage = pathname === "/login/recoverpassword";
     const {
       goFurther,
-      loginTooShort,
+      ageError,
       passwordTooShort,
       emailTooShort,
       newPassword
     } = this.state;
-    console.log(goFurther);
     return (
       <div className={style.box}>
         {pathname === "/" && !goFurther ? <Redirect to="/login" /> : null}
@@ -97,18 +100,18 @@ export default class LoginPage extends React.Component {
             {isSigninPage || isRecoverPage ? (
               <>
                 <input
-                  type="text"
-                  name="login"
+                  type="number"
+                  name="age"
                   className={style.inputBox}
-                  placeholder="login"
+                  placeholder="age"
                   onChange={e => this.handleInputChange(e)}
                 />
                 <label
                   className={classnames(
-                    loginTooShort ? style.errorLabel : style.errorLabel__hidden
+                    ageError ? style.errorLabel : style.errorLabel__hidden
                   )}
                 >
-                  Podaj login który ma więcej jak 5 znaków.
+                  Podaj prawidłowy wiek.
                 </label>
               </>
             ) : null}
@@ -163,7 +166,18 @@ export default class LoginPage extends React.Component {
                 </li>
                 <li>
                   <Link to="/signin">
-                    <button className={style.button}>Nie masz konta?</button>
+                    <button
+                      onClick={() => {
+                        this.setState({
+                          ageError: false,
+                          passwordTooShort: false,
+                          emailTooShort: false
+                        });
+                      }}
+                      className={style.button}
+                    >
+                      Nie masz konta?
+                    </button>
                   </Link>
                 </li>
               </ul>
@@ -184,7 +198,18 @@ export default class LoginPage extends React.Component {
                   </li>
                   <li>
                     <Link to="/login">
-                      <button className={style.button}>Wróć?</button>
+                      <button
+                        onClick={() => {
+                          this.setState({
+                            ageError: false,
+                            passwordTooShort: false,
+                            emailTooShort: false
+                          });
+                        }}
+                        className={style.button}
+                      >
+                        Wróć?
+                      </button>
                     </Link>
                   </li>
                 </ul>

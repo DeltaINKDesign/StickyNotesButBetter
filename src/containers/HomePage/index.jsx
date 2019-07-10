@@ -76,7 +76,6 @@ class HomePage extends React.Component {
   }
 
   aktualizujBaze = karteczka => {
-    console.log(karteczka);
     updateNotesAPI(karteczka).then(e => this.get());
   };
 
